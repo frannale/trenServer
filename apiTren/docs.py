@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_apispec import marshal_with
 from apispec import APISpec
+from flask_apispec.views import MethodResource
 from apispec.ext.marshmallow import MarshmallowPlugin
 from flask_apispec.extension import FlaskApiSpec
 
