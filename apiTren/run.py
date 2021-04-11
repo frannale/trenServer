@@ -20,7 +20,12 @@ db = SQLAlchemy(app)
 
 # CONTROLLER
 cabina.config(api,docs)
-user.config(api,docs)    
+user.config(api,docs)  
+
+@app.route('/updatedb')
+def update_db():
+    db.create_all()
+    return 'Database Updated'
 
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler
