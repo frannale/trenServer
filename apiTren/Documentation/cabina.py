@@ -5,4 +5,5 @@ class PostCabinaSchema(Schema):
     codigo_cabina = fields.String(required=True, description="Codigo alfanumerico de la cabina")
 
 class PostCabinaResponseSchema(Schema):
-    message = fields.Str(default='Success')
+    exito = fields.Str(default='true')
+    message = fields.Str(default='Operacion exitosa')

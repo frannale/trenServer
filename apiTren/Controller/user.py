@@ -4,6 +4,7 @@ from flask_apispec import marshal_with, doc, use_kwargs
 from Documentation.user import LoginSchema
 from models import UserModel
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
+from Documentation.cabina import PostCabinaResponseSchema,PostCabinaSchema
 
 def config(api,docs):
     
@@ -25,21 +26,20 @@ def config(api,docs):
     # LOGIN AUTH
     class UserLogin(MethodResource,Resource):
         @doc(description='User Login', tags=['User'])
-        def post(self):
+        @use_kwargs(LoginSchema())
+        def post(self, **kwargs):
             data = self.validate()
             current_user = UserModel.find_by_username(data['username'])
 
-            if not current_user:
-                return {'message': 'User {} doesn\'t exist'.format(data['username'])}
-
-            if UserModel.verify_hash(data['password'], current_user.password):
+            if current_user and UserModel.verify_hash(data['password'], current_user.password):
                 access_token = create_access_token(identity = data['username'])
                 return {
-                    'message': 'Logged in as {}'.format(current_user.username),
+                    'exito' : True,
+                    'message': 'Bienvenido {}'.format(current_user.username),
                     'access_token': access_token
                     }
             else:
-                return {'message': 'Credenciales incorrectas'}
+                return {'exito' : False, 'message': 'Credenciales incorrectas'}
 
         def validate(self):
             parser = reqparse.RequestParser()
