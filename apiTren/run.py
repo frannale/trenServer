@@ -5,6 +5,7 @@ from docs import docs_config
 from Controller import cabina,user
 from flask_jwt_extended import JWTManager
 from webargs.flaskparser import use_args, use_kwargs, parser, abort
+from flask_cors import CORS
 
 # CONFIGURA APP
 app = Flask(__name__)
@@ -17,15 +18,11 @@ api = Api(app)
 docs = docs_config(app)
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
+CORS(app)
 
 # CONTROLLER
 cabina.config(api,docs)
 user.config(api,docs)  
-
-@app.route('/updatedb')
-def update_db():
-    db.create_all()
-    return 'Database Updated'
 
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler

@@ -4,7 +4,6 @@ from flask_apispec import marshal_with, doc, use_kwargs
 from Documentation.user import LoginSchema
 from models import UserModel
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
-from Documentation.cabina import PostCabinaResponseSchema,PostCabinaSchema
 
 def config(api,docs):
     
@@ -28,11 +27,10 @@ def config(api,docs):
         @doc(description='User Login', tags=['User'])
         @use_kwargs(LoginSchema())
         def post(self, **kwargs):
-            data = self.validate()
-            # current_user = UserModel.find_by_username(data['username'])
+            data = kwargs
+            current_user = UserModel.find_by_username(data['username'])
 
-            # if current_user and UserModel.verify_hash(data['password'], current_user.password):
-            if True and UserModel.verify_hash(data['password'], UserModel.generate_hash("admin")):
+            if current_user and UserModel.verify_hash(data['password'], current_user.password):
                 access_token = create_access_token(identity = data['username'])
                 return {
                     'exito' : True,
@@ -41,13 +39,6 @@ def config(api,docs):
                     }
             else:
                 return {'exito' : False, 'message': 'Credenciales incorrectas'}
-
-        def validate(self):
-            parser = reqparse.RequestParser()
-            parser.add_argument('username', help = 'This field cannot be blank', required = True)
-            parser.add_argument('password', help = 'This field cannot be blank', required = True)
-            return parser.parse_args()
-
 
     api.add_resource(UserLogin, '/auth')
     docs.register(UserLogin)
