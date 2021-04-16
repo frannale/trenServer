@@ -10,6 +10,7 @@ class PostPuntoSchema(Schema):
     latitud = fields.String(required=True, description="Latitud")
     longitud = fields.String(required=True, description="Longitud")
     observaciones = fields.String(required=True, description="Observaciones del punto")
+    epc = fields.String(required=True, description="EPC del punto")
     fecha_instalacion = fields.String(required=True, description="Fecha de instalacion formato dd/mm/yyyy")
 
 class PutPuntoSchema(Schema):
@@ -21,5 +22,6 @@ class PutPuntoSchema(Schema):
     latitud = fields.String(required=True, description="Latitud")
     longitud = fields.String(required=True, description="Longitud")
     observaciones = fields.String(required=True, description="Observaciones del punto")
+    epc = fields.String(required=True, description="EPC del punto")
     fecha_instalacion = fields.String(required=True, description="Fecha de instalacion formato dd/mm/yyyy")
 

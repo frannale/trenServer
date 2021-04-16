@@ -70,6 +70,7 @@ def config(api,docs):
                     asociado_a = kwargs['asociado_a'],
                     latitud = kwargs['latitud'],
                     longitud = kwargs['longitud'],
+                    epc = kwargs['epc'],
                     observaciones = kwargs['observaciones'],
                     estado = "activo",
                     fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
@@ -108,6 +109,7 @@ def config(api,docs):
             current_punto.progresivas = kwargs['progresivas'],
             current_punto.latitud = kwargs['latitud'],
             current_punto.longitud = kwargs['longitud'],
+            current_punto.epc = kwargs['epc'],
             current_punto.observaciones = kwargs['observaciones'],
             current_punto.fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
             current_punto.update()
@@ -145,3 +147,63 @@ def config(api,docs):
 
     api.add_resource(DeletePunto, '/puntos/<id_punto>')
     docs.register(DeletePunto)
+
+    # GET LISTA NEGRA
+    class GetListaNegra(MethodResource,Resource):
+        @jwt_required()
+        @doc(description='Retorna la lista negra', tags=['Lista Negra'])
+        def get(self):
+            
+            puntos = PuntoModel.get_lista_negra(request.args)
+            return {
+                'exito' : True,
+                'message': 'Lista Negra consultada exitosamente',
+                'result' : puntos
+            }
+
+    api.add_resource(GetListaNegra, '/listaNegra')
+    docs.register(GetListaNegra)
+
+    # ENVIA A LISTA NEGRA
+    class PostListaNegra(MethodResource,Resource):
+        @jwt_required()
+        @doc(description='Recibe id_punto y lo agrega a la lista negra', tags=['Lista Negra'])
+        def post(self,id_punto):
+
+            current_punto = PuntoModel.find_by_id_punto(id_punto)
+
+            if not current_punto:
+                return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
+
+            current_punto.estado = 'anulado'
+            current_punto.update()
+
+            return {
+                'exito' : True,
+                'message': 'Enviado a la lista negra exitosamente'
+            }
+
+    api.add_resource(PostListaNegra, '/listaNegra/<id_punto>')
+    docs.register(PostListaNegra)
+
+    # ELIMINA DE LA LISTA NEGRA
+    class DeleteListaNegra(MethodResource,Resource):
+        @jwt_required()
+        @doc(description='Recibe id_punto y lo elimina de  la lista negra', tags=['Lista Negra'])
+        def delete(self,id_punto):
+
+            current_punto = PuntoModel.find_by_id_punto(id_punto)
+
+            if not current_punto:
+                return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
+
+            current_punto.estado = 'activo'
+            current_punto.update()
+
+            return {
+                'exito' : True,
+                'message': 'Eliminado de la lista negra exitosamente'
+            }
+
+    api.add_resource(DeleteListaNegra, '/listaNegra/<id_punto>')
+    docs.register(DeleteListaNegra)

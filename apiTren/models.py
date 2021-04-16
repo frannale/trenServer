@@ -15,6 +15,7 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(120), unique = True, nullable = False)
     password = db.Column(db.String(120), nullable = False)
+    role = db.Column(db.String(120), nullable = False)
 
 
     def save_to_db(self):
@@ -93,6 +94,7 @@ class PuntoModel(db.Model):
     latitud = db.Column(db.String(220), nullable = False)
     longitud = db.Column(db.String(220), nullable = False)
     estado = db.Column(db.String(220), nullable = False)
+    epc = db.Column(db.String(220), nullable = False)
     fecha_instalacion = db.Column(db.Date, nullable = False)
     observaciones = db.Column(db.String(400), nullable = False)
     
@@ -116,6 +118,7 @@ class PuntoModel(db.Model):
             'latitud' : self.latitud,
             'longitud' : self.longitud,
             'estado' : self.estado,
+            'epc' : self.epc,
             'observaciones' : self.observaciones,
             'fecha_instalacion' : self.fecha_instalacion.strftime("%d/%m/%Y"),
         }
@@ -125,9 +128,17 @@ class PuntoModel(db.Model):
         squares = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
-        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        for item in  cls.query.filter_by(estado = 'activo').paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
         return squares
 
+
+    @classmethod
+    def get_lista_negra(cls,get_args):
+        squares = []
+        page = int(get_args.get('page',1))
+        per_page = int(get_args.get('per_page',200))
+        for item in  cls.query.filter_by(estado = 'anulado').paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        return squares
 
     @classmethod
     def update(cls):
@@ -160,11 +171,13 @@ class LecturaModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_json(self):
+    def to_json(self,item):
         return {
             'id_lectura' : self.id_lectura,
             'id_punto' : self.id_punto,
             'id_cabina' : self.id_cabina,
+            'tag_punto' : item[1],
+            'codigo_cabina' : item[1],
             'epc' : self.epc,
             'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
         }
@@ -174,9 +187,15 @@ class LecturaModel(db.Model):
         squares = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
-        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        result = cls.query\
+                    .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
+                    .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
+                    .add_columns(PuntoModel.id_tag,CabinaModel.codigo_cabina)\
+                    .paginate(page,per_page,error_out=False)\
+                    .items
+        print(result)
+        for item in result : squares.append(item[0].to_json(item))
         return squares
-
 
     @classmethod
     def update(cls):
