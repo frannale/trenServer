@@ -37,10 +37,9 @@ class UserModel(db.Model):
 class CabinaModel(db.Model):
     __tablename__ = 'cabinas'
 
-    id = db.Column(db.Integer, primary_key = True)
-    id_config = db.Column(db.Integer, unique = True)
+    id_config = db.Column(db.Integer, primary_key = True)
     codigo_cabina = db.Column(db.String(120), unique = True, nullable = False)
-    observaciones = db.Column(db.String(220), nullable = False)
+    observaciones = db.Column(db.String(400), nullable = False)
     fecha_instalacion = db.Column(db.Date, nullable = False)
 
     def save_to_db(self):
@@ -53,7 +52,6 @@ class CabinaModel(db.Model):
 
     def to_json(self):
         return {
-            'id' : self.id,
             'id_config' : self.id_config,
             'codigo_cabina' : self.codigo_cabina,
             'observaciones' : self.observaciones,
@@ -61,9 +59,11 @@ class CabinaModel(db.Model):
         }
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls,get_args):
         squares = []
-        for item in  cls.query.all(): squares.append(item.to_json())
+        page = int(get_args.get('page',1))
+        per_page = int(get_args.get('per_page',200))
+        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
         return squares
 
 
@@ -71,10 +71,6 @@ class CabinaModel(db.Model):
     def update(cls):
         db.session.commit()
         return True
-
-    @classmethod
-    def find_by_id(cls, id):
-        return cls.query.filter_by(id = id).first()
 
     @classmethod
     def find_by_id_config(cls, id_config):
@@ -98,6 +94,7 @@ class PuntoModel(db.Model):
     longitud = db.Column(db.String(220), nullable = False)
     estado = db.Column(db.String(220), nullable = False)
     fecha_instalacion = db.Column(db.Date, nullable = False)
+    observaciones = db.Column(db.String(400), nullable = False)
     
 
     def save_to_db(self):
@@ -119,13 +116,16 @@ class PuntoModel(db.Model):
             'latitud' : self.latitud,
             'longitud' : self.longitud,
             'estado' : self.estado,
+            'observaciones' : self.observaciones,
             'fecha_instalacion' : self.fecha_instalacion.strftime("%d/%m/%Y"),
         }
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls,get_args):
         squares = []
-        for item in  cls.query.all(): squares.append(item.to_json())
+        page = int(get_args.get('page',1))
+        per_page = int(get_args.get('per_page',200))
+        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
         return squares
 
 
@@ -141,5 +141,51 @@ class PuntoModel(db.Model):
     @classmethod
     def find_by_tag(cls, tag):
         return cls.query.filter_by(id_tag = tag).first()
+
+# LECTURA CLASS
+class LecturaModel(db.Model):
+    __tablename__ = 'lecturas'
+
+    id_lectura = db.Column(db.Integer , primary_key = True)
+    id_punto = db.Column(db.Integer)
+    id_cabina = db.Column(db.Integer)
+    epc = db.Column(db.String(220), nullable = False)
+    fecha_lectura = db.Column(db.DateTime, nullable = False)
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_json(self):
+        return {
+            'id_lectura' : self.id_lectura,
+            'id_punto' : self.id_punto,
+            'id_cabina' : self.id_cabina,
+            'epc' : self.epc,
+            'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
+        }
+
+    @classmethod
+    def get_all(cls,get_args):
+        squares = []
+        page = int(get_args.get('page',1))
+        per_page = int(get_args.get('per_page',200))
+        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        return squares
+
+
+    @classmethod
+    def update(cls):
+        db.session.commit()
+        return True
+
+    @classmethod
+    def find_by_id_lectura(cls, id_lectura):
+        return cls.query.filter_by(id_lectura = id_lectura).first()
+
 
 db.create_all()

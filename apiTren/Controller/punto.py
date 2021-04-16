@@ -1,20 +1,21 @@
-from flask_apispec import marshal_with, doc, use_kwargs
+from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
-from flask_restful import Resource, Api, fields, marshal_with
+from flask_restful import Resource, Api
 from models import PuntoModel
-from Documentation.punto import PostPuntoSchema
+from Documentation.punto import PostPuntoSchema,PutPuntoSchema
 import datetime
-from flask import jsonify
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
+from flask import request
+from flask_jwt_extended import (jwt_required)
 
 def config(api,docs):
 
-    # GET PUNTOPS
+    # GET PUNTOS
     class GetPunto(MethodResource,Resource):
         @jwt_required()
         @doc(description='Retorna el listado de puntos', tags=['Punto'])
         def get(self):
-            puntos = PuntoModel.get_all()
+            
+            puntos = PuntoModel.get_all(request.args)
             return {
                 'exito' : True,
                 'message': 'Puntos consultados exitosamente',
@@ -69,6 +70,7 @@ def config(api,docs):
                     asociado_a = kwargs['asociado_a'],
                     latitud = kwargs['latitud'],
                     longitud = kwargs['longitud'],
+                    observaciones = kwargs['observaciones'],
                     estado = "activo",
                     fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
                 )
@@ -84,11 +86,11 @@ def config(api,docs):
     api.add_resource(PostPunto, '/puntos/new')
     docs.register(PostPunto)
 
-    # EDIT CABINA
+    # EDIT PUNTO
     class PutPunto(MethodResource,Resource):
         @jwt_required()
         @doc(description='Edita una punto', tags=['Punto'])
-        @use_kwargs(PostPuntoSchema, location=('json'))
+        @use_kwargs(PutPuntoSchema, location=('json'))
         def put(self,id_punto, **kwargs):
 
             current_punto = PuntoModel.find_by_id_punto(id_punto)
@@ -106,13 +108,14 @@ def config(api,docs):
             current_punto.progresivas = kwargs['progresivas'],
             current_punto.latitud = kwargs['latitud'],
             current_punto.longitud = kwargs['longitud'],
+            current_punto.observaciones = kwargs['observaciones'],
             current_punto.fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
             current_punto.update()
             try:
 
                 return {
                     'exito' : True,
-                    'message': 'Punto {} editada exitosamente'.format(kwargs['id_tag']),
+                    'message': 'Punto {} editado exitosamente'.format(kwargs['id_tag']),
                     'result' : current_punto.to_json()
                 }
             except:

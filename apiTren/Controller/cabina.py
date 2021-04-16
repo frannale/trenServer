@@ -1,11 +1,11 @@
-from flask_apispec import marshal_with, doc, use_kwargs
+from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
-from flask_restful import Resource, Api, fields, marshal_with
+from flask_restful import Resource, Api
 from models import CabinaModel
 from Documentation.cabina import PostCabinaSchema,PutCabinaSchema
 import datetime
-from flask import jsonify
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
+from flask import request
+from flask_jwt_extended import (jwt_required)
 
 def config(api,docs):
 
@@ -14,7 +14,7 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna el listado de cabinas', tags=['Cabina'])
         def get(self):
-            cabinas = CabinaModel.get_all()
+            cabinas = CabinaModel.get_all(request.args)
             return {
                 'exito' : True,
                 'message': 'Cabinas consultadas exitosamente',
@@ -28,9 +28,9 @@ def config(api,docs):
     class GetCabinaById(MethodResource,Resource):
         @jwt_required()
         @doc(description='Retorna cabina por ID', tags=['Cabina'])
-        def get(self,id_cabina):
+        def get(self,id_config):
 
-            current_cabina = CabinaModel.find_by_id(id_cabina)
+            current_cabina = CabinaModel.find_by_id_config(id_config)
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
             return {
@@ -39,7 +39,7 @@ def config(api,docs):
                 'result' : current_cabina.to_json()
             }
 
-    api.add_resource(GetCabinaById, '/cabinas/<id_cabina>')
+    api.add_resource(GetCabinaById, '/cabinas/<id_config>')
     docs.register(GetCabinaById)
 
     # NEW CABINA
@@ -83,24 +83,20 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Edita una cabina', tags=['Cabina'])
         @use_kwargs(PutCabinaSchema, location=('json'))
-        def put(self,id_cabina, **kwargs):
+        def put(self,id_config, **kwargs):
 
-            current_cabina = CabinaModel.find_by_id(id_cabina)
+            current_cabina = CabinaModel.find_by_id_config(id_config)
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
 
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
             exist_cabina = CabinaModel.find_by_codigo_cabina(kwargs['codigo_cabina'])
-            if exist_cabina and exist_cabina.id != current_cabina.id :
+            if exist_cabina and exist_cabina.id_config != current_cabina.id_config :
                 return {'exito' : False,'message': 'Ya existe una cabina con ese codigo'}
 
-            exist_cabina = CabinaModel.find_by_id_config(kwargs['id_config'])
-            if exist_cabina and exist_cabina.id != current_cabina.id :
-                return {'exito' : False,'message': 'Ya existe una cabina con ese ID de configuracion'}
 
             try:
                 # EDITA CABINA
-                current_cabina.id_config = kwargs['id_config'],
                 current_cabina.codigo_cabina = kwargs['codigo_cabina'],
                 current_cabina.observaciones = kwargs['observaciones'],
                 current_cabina.fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
@@ -113,16 +109,16 @@ def config(api,docs):
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al editar la cabina'}
 
-    api.add_resource(PutCabina, '/cabinas/<id_cabina>')
+    api.add_resource(PutCabina, '/cabinas/<id_config>')
     docs.register(PutCabina)
 
     # DELETE CABINA BY ID
     class DeleteCabina(MethodResource,Resource):
         @jwt_required()
-        @doc(description='Elimina cabina por ID', tags=['Cabina'])
-        def delete(self,id_cabina):
+        @doc(description='Elimina cabina por ID config', tags=['Cabina'])
+        def delete(self,id_config):
 
-            current_cabina = CabinaModel.find_by_id(id_cabina)
+            current_cabina = CabinaModel.find_by_id_config(id_config)
 
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
@@ -135,5 +131,5 @@ def config(api,docs):
                 'message': 'Cabina eliminada exitosamente'
             }
 
-    api.add_resource(DeleteCabina, '/cabinas/<id_cabina>')
+    api.add_resource(DeleteCabina, '/cabinas/<id_config>')
     docs.register(DeleteCabina)
