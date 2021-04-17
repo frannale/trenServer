@@ -10,9 +10,12 @@ def config(api,docs):
     class UserRegistration(Resource):
         def post(self):
             new_user = UserModel(
+                role = "admin",
                 username = "admin",
                 password = UserModel.generate_hash("admin")
             )
+
+            new_user.save_to_db()
             try:
                 new_user.save_to_db()
                 return {
