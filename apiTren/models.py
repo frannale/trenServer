@@ -1,5 +1,6 @@
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from flask import Flask
 import datetime
 
@@ -64,7 +65,14 @@ class CabinaModel(db.Model):
         squares = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
-        for item in  cls.query.paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        sort = get_args.get('sort','id_config')
+        ord = get_args.get('ord','a')
+        result = cls.query\
+                        .order_by( desc(sort) if ord == 'd' else sort )\
+                        .paginate(page,per_page,error_out=False)\
+                        .items 
+
+        for item in result : squares.append(item.to_json())
         return squares
 
 
@@ -81,7 +89,7 @@ class CabinaModel(db.Model):
     def find_by_codigo_cabina(cls, codigo_cabina):
         return cls.query.filter_by(codigo_cabina = codigo_cabina).first()
 
-# CABINA CLASS
+# PUNTO CLASS
 class PuntoModel(db.Model):
     __tablename__ = 'puntos'
 
@@ -98,7 +106,6 @@ class PuntoModel(db.Model):
     fecha_instalacion = db.Column(db.Date, nullable = False)
     observaciones = db.Column(db.String(400), nullable = False)
     
-
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -128,7 +135,14 @@ class PuntoModel(db.Model):
         squares = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
-        for item in  cls.query.filter_by(estado = 'activo').paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        sort = get_args.get('sort','id_punto')
+        ord = get_args.get('ord','a')
+        result = cls.query\
+                        .filter_by(estado = 'activo')\
+                        .order_by( desc(sort) if ord == 'd' else sort )\
+                        .paginate(page,per_page,error_out=False)\
+                        .items
+        for item in result : squares.append(item.to_json())
         return squares
 
 
@@ -137,7 +151,14 @@ class PuntoModel(db.Model):
         squares = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
-        for item in  cls.query.filter_by(estado = 'anulado').paginate(page,per_page,error_out=False).items : squares.append(item.to_json())
+        sort = get_args.get('sort','id_punto')
+        ord = get_args.get('ord','a')
+        result = cls.query\
+                        .filter_by(estado = 'anulado')\
+                        .order_by( desc(sort) if ord == 'd' else sort )\
+                        .paginate(page,per_page,error_out=False)\
+                        .items
+        for item in result : squares.append(item.to_json())
         return squares
 
     @classmethod
@@ -171,13 +192,13 @@ class LecturaModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_json(self,item):
+    def to_json(self,item = None):
         return {
             'id_lectura' : self.id_lectura,
             'id_punto' : self.id_punto,
             'id_cabina' : self.id_cabina,
-            'tag_punto' : item[1],
-            'codigo_cabina' : item[1],
+            'id_tag' :  item[1] if item else 'null' ,
+            'codigo_cabina' : item[2] if item else 'null' ,
             'epc' : self.epc,
             'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
         }
@@ -185,15 +206,26 @@ class LecturaModel(db.Model):
     @classmethod
     def get_all(cls,get_args):
         squares = []
+
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
+        sort = get_args.get('sort','fecha_lectura')
+        ord = get_args.get('ord','d')
+        id_cabina = get_args.get('id_cabina', 0)
+        id_punto = get_args.get('id_punto', 0)
+        desde_date =   datetime.datetime.strptime(get_args.get('desde'), '%d/%m/%Y')
+        hasta_date =   datetime.datetime.strptime(get_args.get('hasta'), '%d/%m/%Y')
         result = cls.query\
+                    .filter(LecturaModel.fecha_lectura.between(desde_date, hasta_date))\
+                    .filter((LecturaModel.id_cabina == id_cabina) | (id_cabina == 0))\
+                    .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
                     .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
                     .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
                     .add_columns(PuntoModel.id_tag,CabinaModel.codigo_cabina)\
+                    .order_by( desc(sort) if ord == 'd' else sort )\
                     .paginate(page,per_page,error_out=False)\
                     .items
-        print(result)
+        
         for item in result : squares.append(item[0].to_json(item))
         return squares
 

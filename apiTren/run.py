@@ -7,10 +7,10 @@ from flask_jwt_extended import JWTManager
 from webargs.flaskparser import use_args, use_kwargs, parser, abort
 from flask_cors import CORS
 import datetime
+from waitress import serve
 
 # CONFIGURA APP
 app = Flask(__name__)
-app.debug = True
 app.config['SECRET_KEY'] = 'super-secret'
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=7200)
@@ -36,4 +36,4 @@ def handle_request_parsing_error(err, req, schema, *, error_status_code, error_h
 
 # LEVANTA APP
 if __name__ == '__main__':
-    app.run(debug=True)
+    serve(app, host='0.0.0.0', port=5000, url_scheme='https')

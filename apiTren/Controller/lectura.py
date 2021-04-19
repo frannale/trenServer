@@ -14,7 +14,12 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna el listado de lecturas', tags=['Lectura'])
         def get(self):
-            lecturas = LecturaModel.get_all(request.args)
+
+            get_param = request.args
+            if get_param.get('desde','null') == 'null' or  get_param.get('hasta','null') == 'null' :
+                return {'exito' : False,'message': 'Se debe enviar un periodo de consulta, desde y hasta'}
+
+            lecturas = LecturaModel.get_all(get_param)
             return {
                 'exito' : True,
                 'message': 'Lecturas consultados exitosamente',
