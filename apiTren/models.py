@@ -22,10 +22,15 @@ class UserModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     @classmethod
     def find_by_username(cls, username):
-        return cls.query.filter_by(username = username).first()
+        result = cls.query.filter_by(username = username).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result
 
     @staticmethod
     def generate_hash(password):
@@ -47,10 +52,14 @@ class CabinaModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def to_json(self):
         return {
@@ -73,21 +82,31 @@ class CabinaModel(db.Model):
                         .items 
 
         for item in result : squares.append(item.to_json())
+        db.session.remove()
+        db.engine.dispose()
         return squares
 
 
     @classmethod
     def update(cls):
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
         return True
 
     @classmethod
     def find_by_id_config(cls, id_config):
-        return cls.query.filter_by(id_config = id_config).first()
+        result = cls.query.filter_by(id_config = id_config).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result
 
     @classmethod
     def find_by_codigo_cabina(cls, codigo_cabina):
-        return cls.query.filter_by(codigo_cabina = codigo_cabina).first()
+        result =  cls.query.filter_by(codigo_cabina = codigo_cabina).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result
 
 # PUNTO CLASS
 class PuntoModel(db.Model):
@@ -109,10 +128,14 @@ class PuntoModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def to_json(self):
         return {
@@ -159,20 +182,30 @@ class PuntoModel(db.Model):
                         .paginate(page,per_page,error_out=False)\
                         .items
         for item in result : squares.append(item.to_json())
+        db.session.remove()
+        db.engine.dispose()
         return squares
 
     @classmethod
     def update(cls):
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
         return True
 
     @classmethod
     def find_by_id_punto(cls, id_punto):
-        return cls.query.filter_by(id_punto = id_punto).first()
+        result = cls.query.filter_by(id_punto = id_punto).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result 
 
     @classmethod
     def find_by_tag(cls, tag):
-        return cls.query.filter_by(id_tag = tag).first()
+        result = cls.query.filter_by(id_tag = tag).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result
 
 # LECTURA CLASS
 class LecturaModel(db.Model):
@@ -187,10 +220,14 @@ class LecturaModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
 
     def to_json(self,item = None):
         return {
@@ -227,16 +264,23 @@ class LecturaModel(db.Model):
                     .items
         
         for item in result : squares.append(item[0].to_json(item))
+        db.session.remove()
+        db.engine.dispose()
         return squares
 
     @classmethod
     def update(cls):
         db.session.commit()
+        db.session.remove()
+        db.engine.dispose()
         return True
 
     @classmethod
     def find_by_id_lectura(cls, id_lectura):
-        return cls.query.filter_by(id_lectura = id_lectura).first()
+        result = cls.query.filter_by(id_lectura = id_lectura).first()
+        db.session.remove()
+        db.engine.dispose()
+        return result
 
 
 db.create_all()
