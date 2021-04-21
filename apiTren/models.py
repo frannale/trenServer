@@ -166,6 +166,8 @@ class PuntoModel(db.Model):
                         .paginate(page,per_page,error_out=False)\
                         .items
         for item in result : squares.append(item.to_json())
+        db.session.remove()
+        db.engine.dispose()
         return squares
 
 
