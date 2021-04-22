@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
+from flask import Flask,render_template
 from flask_restful import Api
 from docs import docs_config
 from Controller import cabina,user,punto,lectura
@@ -29,6 +29,11 @@ cabina.config(api,docs)
 user.config(api,docs)
 punto.config(api,docs)
 lectura.config(api,docs)  
+
+@app.route('/', methods=['GET'])
+def home():
+  return render_template('index.html')
+
 
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler
