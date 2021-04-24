@@ -30,7 +30,10 @@ def config(api,docs):
         @doc(description='Retorna cabina por ID', tags=['Cabina'])
         def get(self,id_config):
 
-            current_cabina = CabinaModel.find_by_id_config(id_config)
+            current_cabina = CabinaModel.find_by_id_config(id_config,True)
+            if current_cabina:
+                current_cabina.close_connection()
+
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
             return {
@@ -52,14 +55,16 @@ def config(api,docs):
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
             exist_cabina = CabinaModel.find_by_codigo_cabina(kwargs['codigo_cabina'])
             if exist_cabina:
+                exist_cabina.close_connection()
                 return {'exito' : False,'message': 'Ya existe una cabina con ese codigo'}
 
-            exist_cabina = CabinaModel.find_by_id_config(kwargs['id_config'])
+            exist_cabina = CabinaModel.find_by_id_config(kwargs['id_config'],False)
             if exist_cabina:
+                exist_cabina.close_connection()
                 return {'exito' : False,'message': 'Ya existe una cabina con ese ID de configuracion'}
 
             try:
-                # CREA CABINA
+                #CREA CABINA
                 new_cabina = CabinaModel(
                     id_config = kwargs['id_config'],
                     codigo_cabina = kwargs['codigo_cabina'],
@@ -69,8 +74,7 @@ def config(api,docs):
                 new_cabina.save_to_db()
                 return {
                     'exito' : True,
-                    'message': 'Cabina {} creada exitosamente'.format(kwargs['codigo_cabina']),
-                    'result' : new_cabina.to_json()
+                    'message': 'Cabina {} creada exitosamente'.format(kwargs['codigo_cabina'])
                 }
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al crear la cabina'}
@@ -85,16 +89,20 @@ def config(api,docs):
         @use_kwargs(PutCabinaSchema, location=('json'))
         def put(self,id_config, **kwargs):
 
-            current_cabina = CabinaModel.find_by_id_config(id_config)
+            current_cabina = CabinaModel.find_by_id_config(id_config,True)
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
 
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
             exist_cabina = CabinaModel.find_by_codigo_cabina(kwargs['codigo_cabina'])
             if exist_cabina and exist_cabina.id_config != current_cabina.id_config :
+                exist_cabina.close_connection()
                 return {'exito' : False,'message': 'Ya existe una cabina con ese codigo'}
-
-
+            
+            current_cabina.codigo_cabina = kwargs['codigo_cabina'],
+            current_cabina.observaciones = kwargs['observaciones'],
+            current_cabina.fecha_instalacion = datetime.datetime.strptime(kwargs['fecha_instalacion'], '%d/%m/%Y')
+            current_cabina.update()
             try:
                 # EDITA CABINA
                 current_cabina.codigo_cabina = kwargs['codigo_cabina'],
@@ -103,8 +111,7 @@ def config(api,docs):
                 current_cabina.update()
                 return {
                     'exito' : True,
-                    'message': 'Cabina {} editada exitosamente'.format(kwargs['codigo_cabina']),
-                    'result' : current_cabina.to_json()
+                    'message': 'Cabina {} editada exitosamente'.format(kwargs['codigo_cabina'])
                 }
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al editar la cabina'}
@@ -118,7 +125,7 @@ def config(api,docs):
         @doc(description='Elimina cabina por ID config', tags=['Cabina'])
         def delete(self,id_config):
 
-            current_cabina = CabinaModel.find_by_id_config(id_config)
+            current_cabina = CabinaModel.find_by_id_config(id_config,True)
 
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}

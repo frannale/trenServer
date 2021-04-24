@@ -95,18 +95,23 @@ class CabinaModel(db.Model):
         return True
 
     @classmethod
-    def find_by_id_config(cls, id_config):
+    def find_by_id_config(cls, id_config,close_connection):
         result = cls.query.filter_by(id_config = id_config).first()
-        db.session.remove()
-        db.engine.dispose()
+        if not result and close_connection:
+            db.session.remove()
+            db.engine.dispose()
         return result
 
     @classmethod
     def find_by_codigo_cabina(cls, codigo_cabina):
         result =  cls.query.filter_by(codigo_cabina = codigo_cabina).first()
+        return result
+
+    @classmethod
+    def close_connection(cls):
         db.session.remove()
         db.engine.dispose()
-        return result
+        return True
 
 # PUNTO CLASS
 class PuntoModel(db.Model):
@@ -196,18 +201,23 @@ class PuntoModel(db.Model):
         return True
 
     @classmethod
-    def find_by_id_punto(cls, id_punto):
+    def find_by_id_punto(cls, id_punto,close_connection):
         result = cls.query.filter_by(id_punto = id_punto).first()
-        db.session.remove()
-        db.engine.dispose()
+        if not result and close_connection:
+            db.session.remove()
+            db.engine.dispose()
         return result 
 
     @classmethod
     def find_by_tag(cls, tag):
         result = cls.query.filter_by(id_tag = tag).first()
+        return result
+
+    @classmethod
+    def close_connection(cls):
         db.session.remove()
         db.engine.dispose()
-        return result
+        return True
 
 # LECTURA CLASS
 class LecturaModel(db.Model):
@@ -237,7 +247,9 @@ class LecturaModel(db.Model):
             'id_punto' : self.id_punto,
             'id_cabina' : self.id_cabina,
             'id_tag' :  item[1] if item else 'null' ,
-            'codigo_cabina' : item[2] if item else 'null' ,
+            'via' :  item[2] if item else 'null' ,
+            'baliza' :  item[3] if item else 'null' ,
+            'codigo_cabina' : item[4] if item else 'null' ,
             'epc' : self.epc,
             'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
         }
@@ -260,7 +272,8 @@ class LecturaModel(db.Model):
                     .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
                     .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
                     .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
-                    .add_columns(PuntoModel.id_tag,CabinaModel.codigo_cabina)\
+                    .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
+                    .filter(PuntoModel.estado == 'activo')\
                     .order_by( desc(sort) if ord == 'd' else sort )\
                     .paginate(page,per_page,error_out=False)\
                     .items
@@ -271,18 +284,15 @@ class LecturaModel(db.Model):
         return squares
 
     @classmethod
-    def update(cls):
-        db.session.commit()
+    def find_by_id_lectura(cls, id_lectura):
+        result = cls.query.filter_by(id_lectura = id_lectura).first()
+        return result
+
+    @classmethod
+    def close_connection(cls):
         db.session.remove()
         db.engine.dispose()
         return True
-
-    @classmethod
-    def find_by_id_lectura(cls, id_lectura):
-        result = cls.query.filter_by(id_lectura = id_lectura).first()
-        db.session.remove()
-        db.engine.dispose()
-        return result
 
 
 db.create_all()

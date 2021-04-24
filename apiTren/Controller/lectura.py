@@ -48,13 +48,12 @@ def config(api,docs):
                 fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
             )
             new_lectura.save_to_db()
-            new_lectura.to_json()
+
             try:
 
                 return {
                     'exito' : True,
-                    'message': 'Lectura creada exitosamente',
-                    'result' : new_lectura.to_json()
+                    'message': 'Lectura creada exitosamente'
                 }
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al crear la lectura'}
@@ -63,7 +62,7 @@ def config(api,docs):
     docs.register(PostLectura)
 
 
-    # DELETE PUNTO BY ID
+    # DELETE LECTURA BY ID
     class DeleteLectura(MethodResource,Resource):
         @jwt_required()
         @doc(description='Elimina lectura por ID', tags=['Lectura'])

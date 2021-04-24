@@ -31,7 +31,10 @@ def config(api,docs):
         @doc(description='Retorna punto por ID', tags=['Punto'])
         def get(self,id_punto):
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto)
+            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
+            if current_punto:
+                current_punto.close_connection()
+                
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
             return {
@@ -51,12 +54,14 @@ def config(api,docs):
         def post(self, **kwargs):
 
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
-            exist_punto = PuntoModel.find_by_id_punto(kwargs['id_punto'])
+            exist_punto = PuntoModel.find_by_id_punto(kwargs['id_punto'],False)
             if exist_punto:
+                exist_punto.close_connection()
                 return {'exito' : False,'message': 'Ya existe un punto con ese ID'}
 
             exist_punto = PuntoModel.find_by_tag(kwargs['id_tag'])
             if exist_punto:
+                exist_punto.close_connection()
                 return {'exito' : False,'message': 'Ya existe una punto con ese TAG'}
 
             try:
@@ -78,8 +83,7 @@ def config(api,docs):
                 new_punto.save_to_db()
                 return {
                     'exito' : True,
-                    'message': 'Punto {} creado exitosamente'.format(kwargs['id_tag']),
-                    'result' : new_punto.to_json()
+                    'message': 'Punto {} creado exitosamente'.format(kwargs['id_tag'])
                 }
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al crear el punto'}
@@ -94,7 +98,7 @@ def config(api,docs):
         @use_kwargs(PutPuntoSchema, location=('json'))
         def put(self,id_punto, **kwargs):
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto)
+            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
 
@@ -117,8 +121,7 @@ def config(api,docs):
 
                 return {
                     'exito' : True,
-                    'message': 'Punto {} editado exitosamente'.format(kwargs['id_tag']),
-                    'result' : current_punto.to_json()
+                    'message': 'Punto {} editado exitosamente'.format(kwargs['id_tag'])
                 }
             except:
                 return {'exito' : False,'message': 'Ocurrio un error al editar el punto'}
@@ -132,7 +135,7 @@ def config(api,docs):
         @doc(description='Elimina punto por ID', tags=['Punto'])
         def delete(self,id_punto):
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto)
+            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
@@ -170,7 +173,7 @@ def config(api,docs):
         @doc(description='Recibe id_punto y lo agrega a la lista negra', tags=['Lista Negra'])
         def post(self,id_punto):
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto)
+            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
@@ -192,7 +195,7 @@ def config(api,docs):
         @doc(description='Recibe id_punto y lo elimina de  la lista negra', tags=['Lista Negra'])
         def delete(self,id_punto):
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto)
+            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
