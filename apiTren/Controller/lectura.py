@@ -1,11 +1,11 @@
 from flask_apispec import marshal_with, doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource, Api, fields, marshal_with
-from models import LecturaModel
+from models import LecturaModel,UserModel
 from Documentation.lectura import PostLecturaSchema
 import datetime
 from flask import request
-from flask_jwt_extended import (jwt_required)
+from flask_jwt_extended import (jwt_required,get_jwt_identity)
 
 def config(api,docs):
 
@@ -14,6 +14,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna el listado de lecturas', tags=['Lectura'])
         def get(self):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             get_param = request.args
             if get_param.get('desde','null') == 'null' or  get_param.get('hasta','null') == 'null' :
@@ -68,10 +72,14 @@ def config(api,docs):
         @doc(description='Elimina lectura por ID', tags=['Lectura'])
         def delete(self,id_lectura):
 
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
+
             current_lectura = LecturaModel.find_by_id_lectura(id_lectura)
 
             if not current_lectura:
-                return { 'exito' : False, 'message': 'No se encontro el lectura indicado'}
+                return { 'exito' : False, 'message': 'No se encontro la lectura indicada'}
 
             current_lectura.delete()
 

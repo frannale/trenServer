@@ -1,11 +1,11 @@
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource, Api
-from models import PuntoModel
+from models import PuntoModel,LecturaModel,UserModel
 from Documentation.punto import PostPuntoSchema,PutPuntoSchema
 import datetime
 from flask import request
-from flask_jwt_extended import (jwt_required)
+from flask_jwt_extended import (jwt_required,get_jwt_identity)
 
 def config(api,docs):
 
@@ -14,6 +14,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna el listado de puntos', tags=['Punto'])
         def get(self):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
             
             puntos = PuntoModel.get_all(request.args)
             return {
@@ -30,6 +34,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna punto por ID', tags=['Punto'])
         def get(self,id_punto):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             current_punto = PuntoModel.find_by_id_punto(id_punto,True)
             if current_punto:
@@ -52,6 +60,10 @@ def config(api,docs):
         @doc(description='Crea un nuevo punto', tags=['Punto'])
         @use_kwargs(PostPuntoSchema, location=('json'))
         def post(self, **kwargs):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
             exist_punto = PuntoModel.find_by_id_punto(kwargs['id_punto'],False)
@@ -98,6 +110,10 @@ def config(api,docs):
         @use_kwargs(PutPuntoSchema, location=('json'))
         def put(self,id_punto, **kwargs):
 
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
+
             current_punto = PuntoModel.find_by_id_punto(id_punto,True)
             if not current_punto:
                 return { 'exito' : False, 'message': 'No se encontro el punto indicado'}
@@ -135,6 +151,14 @@ def config(api,docs):
         @doc(description='Elimina punto por ID', tags=['Punto'])
         def delete(self,id_punto):
 
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
+
+            #VERIFICAR QUE NO EXISTAN LECTURAS
+            if LecturaModel.find_by_id_punto(id_punto):
+                return { 'exito' : False, 'message': 'El punto posee lecturas asociadas'}
+            
             current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 
             if not current_punto:
@@ -142,7 +166,6 @@ def config(api,docs):
 
             current_punto.delete()
 
-            # DEBERIA VERIFICAR QUE NO EXISTAN LECTURAS O BORRAR LAS MISMAS
             return {
                 'exito' : True,
                 'message': 'Punto eliminado exitosamente'
@@ -156,6 +179,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna la lista negra', tags=['Lista Negra'])
         def get(self):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
             
             puntos = PuntoModel.get_lista_negra(request.args)
             return {
@@ -172,6 +199,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Recibe id_punto y lo agrega a la lista negra', tags=['Lista Negra'])
         def post(self,id_punto):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 
@@ -194,6 +225,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Recibe id_punto y lo elimina de  la lista negra', tags=['Lista Negra'])
         def delete(self,id_punto):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             current_punto = PuntoModel.find_by_id_punto(id_punto,True)
 

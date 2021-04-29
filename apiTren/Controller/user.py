@@ -7,24 +7,6 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 
 def config(api,docs):
     
-    class UserRegistration(Resource):
-        def post(self):
-            new_user = UserModel(
-                role = "admin",
-                username = "admin",
-                password = UserModel.generate_hash("admin")
-            )
-
-            new_user.save_to_db()
-            try:
-                new_user.save_to_db()
-                return {
-                    'message': 'User {} was created'.format( "admin")
-                }
-            except:
-                return {'message': 'Something went wrong'}, 500
-    api.add_resource(UserRegistration, '/admin')
-    
     # LOGIN AUTH
     class UserLogin(MethodResource,Resource):
         @doc(description='User Login', tags=['User'])
@@ -37,7 +19,7 @@ def config(api,docs):
                 access_token = create_access_token(identity = data['username'])
                 return {
                     'exito' : True,
-                    'message': 'Bienvenido {}'.format("admin"),
+                    'message': 'Bienvenido {}'.format(data['username']),
                     'access_token': access_token
                     }
             else:

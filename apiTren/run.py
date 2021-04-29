@@ -11,8 +11,8 @@ from waitress import serve
 
 # CONFIGURA APP
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'super-secret'
-app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+app.config['SECRET_KEY'] = 'P*ahKoojhgnR'
+app.config['JWT_SECRET_KEY'] = 'P*ahKoojhgnR'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=7200)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/TREN'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -33,7 +33,6 @@ lectura.config(api,docs)
 @app.route('/', methods=['GET'])
 def home():
   return render_template('index.html')
-
 
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler

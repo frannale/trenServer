@@ -22,14 +22,24 @@ class UserModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
-        db.session.remove()
-        db.engine.dispose()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
     @classmethod
     def find_by_username(cls, username):
         result = cls.query.filter_by(username = username).first()
         db.session.remove()
         db.engine.dispose()
+        return result
+
+    @classmethod
+    def is_admin(cls, username):
+        result = cls.query.filter_by(username = username,role = 'admin').first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
         return result
 
     @staticmethod
@@ -286,6 +296,22 @@ class LecturaModel(db.Model):
     @classmethod
     def find_by_id_lectura(cls, id_lectura):
         result = cls.query.filter_by(id_lectura = id_lectura).first()
+        return result
+
+    @classmethod
+    def find_by_id_punto(cls, id_punto):
+        result = cls.query.filter_by(id_punto = id_punto).first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
+        return result
+
+    @classmethod
+    def find_by_id_cabina(cls, id_cabina):
+        result = cls.query.filter_by(id_cabina = id_cabina).first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
         return result
 
     @classmethod

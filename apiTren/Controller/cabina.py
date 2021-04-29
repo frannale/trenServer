@@ -1,11 +1,11 @@
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource, Api
-from models import CabinaModel
+from models import CabinaModel,LecturaModel,UserModel
 from Documentation.cabina import PostCabinaSchema,PutCabinaSchema
 import datetime
 from flask import request
-from flask_jwt_extended import (jwt_required)
+from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 def config(api,docs):
 
@@ -14,6 +14,11 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna el listado de cabinas', tags=['Cabina'])
         def get(self):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
+
             cabinas = CabinaModel.get_all(request.args)
             return {
                 'exito' : True,
@@ -29,6 +34,10 @@ def config(api,docs):
         @jwt_required()
         @doc(description='Retorna cabina por ID', tags=['Cabina'])
         def get(self,id_config):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             current_cabina = CabinaModel.find_by_id_config(id_config,True)
             if current_cabina:
@@ -52,6 +61,10 @@ def config(api,docs):
         @use_kwargs(PostCabinaSchema, location=('json'))
         def post(self, **kwargs):
 
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
+
             # VERIFICA QUE NO EXISTA CON ESE ID Y CODIGO
             exist_cabina = CabinaModel.find_by_codigo_cabina(kwargs['codigo_cabina'])
             if exist_cabina:
@@ -64,6 +77,13 @@ def config(api,docs):
                 return {'exito' : False,'message': 'Ya existe una cabina con ese ID de configuracion'}
 
             try:
+                #CREA USER
+                new_user = UserModel(
+                    role = "tren",
+                    username = str(kwargs['id_config']),
+                    password = UserModel.generate_hash("KxZVM@&0$SOx_" + str(kwargs['id_config']))
+                )
+                new_user.save_to_db()
                 #CREA CABINA
                 new_cabina = CabinaModel(
                     id_config = kwargs['id_config'],
@@ -88,6 +108,10 @@ def config(api,docs):
         @doc(description='Edita una cabina', tags=['Cabina'])
         @use_kwargs(PutCabinaSchema, location=('json'))
         def put(self,id_config, **kwargs):
+
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             current_cabina = CabinaModel.find_by_id_config(id_config,True)
             if not current_cabina:
@@ -125,14 +149,22 @@ def config(api,docs):
         @doc(description='Elimina cabina por ID config', tags=['Cabina'])
         def delete(self,id_config):
 
-            current_cabina = CabinaModel.find_by_id_config(id_config,True)
+            # SOLO ADMIN
+            if not UserModel.is_admin(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
+            #VERIFICAR QUE NO EXISTAN LECTURAS
+            if LecturaModel.find_by_id_cabina(id_config):
+                return { 'exito' : False, 'message': 'La cabina posee lecturas asociadas'}
+            
+            current_cabina = CabinaModel.find_by_id_config(id_config,True)
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
 
+            current_user = UserModel.find_by_username(str(id_config))
+            current_user.delete()
             current_cabina.delete()
 
-            # DEBERIA VERIFICAR QUE NO EXISTAN LECTURAS O BORRAR LAS MISMAS
             return {
                 'exito' : True,
                 'message': 'Cabina eliminada exitosamente'
