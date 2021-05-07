@@ -31,6 +31,7 @@ punto.config(api,docs)
 lectura.config(api,docs)  
 
 @app.route('/', methods=['GET'])
+@app.route('/login', methods=['GET'])
 def home():
   return render_template('index.html')
 

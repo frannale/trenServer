@@ -320,5 +320,4 @@ class LecturaModel(db.Model):
         db.engine.dispose()
         return True
 
-
 db.create_all()
