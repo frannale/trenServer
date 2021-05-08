@@ -81,20 +81,37 @@ class CabinaModel(db.Model):
 
     @classmethod
     def get_all(cls,get_args):
-        squares = []
+        parsed_data = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
         sort = get_args.get('sort','id_config')
         ord = get_args.get('ord','a')
-        result = cls.query\
+
+
+        total = cls.query\
+                        .count()
+
+        total_pages =  cls.query\
+                        .paginate(page,per_page,False).pages
+
+        data = cls.query\
                         .order_by( desc(sort) if ord == 'd' else sort )\
                         .paginate(page,per_page,error_out=False)\
                         .items 
 
-        for item in result : squares.append(item.to_json())
+        for item in data : parsed_data.append(item.to_json())
         db.session.remove()
         db.engine.dispose()
-        return squares
+
+        # PREPARA RESPUESTA
+        result = {}
+        result['data'] = parsed_data
+        result['total'] = total
+        result['page'] = page
+        result['per_page'] = per_page
+        result['total_page'] = total_pages
+
+        return result
 
 
     @classmethod
@@ -170,20 +187,37 @@ class PuntoModel(db.Model):
 
     @classmethod
     def get_all(cls,get_args):
-        squares = []
+        parsed_data = []
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
         sort = get_args.get('sort','id_punto')
         ord = get_args.get('ord','a')
-        result = cls.query\
+
+        total = cls.query\
+                        .filter_by(estado = 'activo')\
+                        .count()
+
+        total_pages =  cls.query\
+                        .filter_by(estado = 'activo')\
+                        .paginate(page,per_page,False).pages
+
+        data = cls.query\
                         .filter_by(estado = 'activo')\
                         .order_by( desc(sort) if ord == 'd' else sort )\
                         .paginate(page,per_page,error_out=False)\
                         .items
-        for item in result : squares.append(item.to_json())
+        for item in data : parsed_data.append(item.to_json())
+
         db.session.remove()
         db.engine.dispose()
-        return squares
+        # PREPARA RESPUESTA
+        result = {}
+        result['data'] = parsed_data
+        result['total'] = total
+        result['page'] = page
+        result['per_page'] = per_page
+        result['total_page'] = total_pages
+        return result
 
 
     @classmethod
@@ -266,7 +300,7 @@ class LecturaModel(db.Model):
 
     @classmethod
     def get_all(cls,get_args):
-        squares = []
+        parsed_data = []
 
         page = int(get_args.get('page',1))
         per_page = int(get_args.get('per_page',200))
@@ -276,7 +310,28 @@ class LecturaModel(db.Model):
         id_punto = get_args.get('id_punto', 0)
         desde_date =   datetime.datetime.strptime(get_args.get('desde'), '%d/%m/%Y')
         hasta_date =   datetime.datetime.strptime(get_args.get('hasta'), '%d/%m/%Y')
-        result = cls.query\
+
+        total = cls.query\
+                    .filter(LecturaModel.fecha_lectura.between(desde_date, hasta_date))\
+                    .filter((LecturaModel.id_cabina == id_cabina) | (id_cabina == 0))\
+                    .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
+                    .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
+                    .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
+                    .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
+                    .filter(PuntoModel.estado == 'activo')\
+                    .count()
+
+        total_pages =  cls.query\
+                            .filter(LecturaModel.fecha_lectura.between(desde_date, hasta_date))\
+                            .filter((LecturaModel.id_cabina == id_cabina) | (id_cabina == 0))\
+                            .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
+                            .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
+                            .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
+                            .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
+                            .filter(PuntoModel.estado == 'activo')\
+                            .paginate(page,per_page,False).pages
+
+        data = cls.query\
                     .filter(LecturaModel.fecha_lectura.between(desde_date, hasta_date))\
                     .filter((LecturaModel.id_cabina == id_cabina) | (id_cabina == 0))\
                     .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
@@ -288,10 +343,19 @@ class LecturaModel(db.Model):
                     .paginate(page,per_page,error_out=False)\
                     .items
         
-        for item in result : squares.append(item[0].to_json(item))
+        for item in data : parsed_data.append(item[0].to_json(item))
         db.session.remove()
         db.engine.dispose()
-        return squares
+
+         # PREPARA RESPUESTA
+        result = {}
+        result['data'] = parsed_data
+        result['total'] = total
+        result['page'] = page
+        result['per_page'] = per_page
+        result['total_page'] = total_pages
+
+        return result
 
     @classmethod
     def find_by_id_lectura(cls, id_lectura):
