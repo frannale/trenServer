@@ -16,7 +16,7 @@ def config(api,docs):
         def get(self):
 
             # SOLO ADMIN
-            if not UserModel.is_admin(get_jwt_identity()):
+            if not UserModel.is_admin_or_lector(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
             
             puntos = PuntoModel.get_all(request.args)
@@ -36,7 +36,7 @@ def config(api,docs):
         def get(self,id_punto):
 
             # SOLO ADMIN
-            if not UserModel.is_admin(get_jwt_identity()):
+            if not UserModel.is_admin_or_lector(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
 
             current_punto = PuntoModel.find_by_id_punto_activo(id_punto,True)

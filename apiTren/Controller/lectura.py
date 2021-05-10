@@ -16,7 +16,7 @@ def config(api,docs):
         def get(self):
 
             # SOLO ADMIN
-            if not UserModel.is_admin(get_jwt_identity()):
+            if not UserModel.is_admin_or_lector(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
 
             get_param = request.args
@@ -40,6 +40,10 @@ def config(api,docs):
         @doc(description='Crea una nueva lectura', tags=['Lectura'])
         @use_kwargs(PostLecturaSchema, location=('json'))
         def post(self, **kwargs):
+
+            # SOLO TREN
+            if not UserModel.is_tren(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
             # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
             id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)

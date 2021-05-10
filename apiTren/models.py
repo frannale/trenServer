@@ -28,15 +28,32 @@ class UserModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def find_by_username(cls, username):
+    def find_by_username(cls, username,close_connection):
         result = cls.query.filter_by(username = username).first()
-        db.session.remove()
-        db.engine.dispose()
+        if not result and close_connection:
+            db.session.remove()
+            db.engine.dispose()
         return result
 
     @classmethod
     def is_admin(cls, username):
         result = cls.query.filter_by(username = username,role = 'admin').first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
+        return result
+
+    @classmethod
+    def is_tren(cls, username):
+        result = cls.query.filter_by(username = username,role = 'tren').first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
+        return result
+
+    @classmethod
+    def is_admin_or_lector(cls, username):
+        result = cls.query.filter((UserModel.role == 'admin') | (UserModel.role == 'lector') ).filter(UserModel.username == username).first()
         if not result:
             db.session.remove()
             db.engine.dispose()
@@ -49,6 +66,12 @@ class UserModel(db.Model):
     @staticmethod
     def verify_hash(password, hash):
         return sha256.verify(password, hash)
+
+    @classmethod
+    def close_connection(cls):
+        db.session.remove()
+        db.engine.dispose()
+        return True
 
 # CABINA CLASS
 class CabinaModel(db.Model):

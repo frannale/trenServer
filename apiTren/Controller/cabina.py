@@ -16,7 +16,7 @@ def config(api,docs):
         def get(self):
 
             # SOLO ADMIN
-            if not UserModel.is_admin(get_jwt_identity()):
+            if not UserModel.is_admin_or_lector(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
 
             cabinas = CabinaModel.get_all(request.args)
@@ -36,7 +36,7 @@ def config(api,docs):
         def get(self,id_config):
 
             # SOLO ADMIN
-            if not UserModel.is_admin(get_jwt_identity()):
+            if not UserModel.is_admin_or_lector(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
 
             current_cabina = CabinaModel.find_by_id_config(id_config,True)
@@ -161,7 +161,7 @@ def config(api,docs):
             if not current_cabina:
                 return { 'exito' : False, 'message': 'No se encontro la cabina indicada'}
 
-            current_user = UserModel.find_by_username(str(id_config))
+            current_user = UserModel.find_by_username(str(id_config),False)
             current_user.delete()
             current_cabina.delete()
 
