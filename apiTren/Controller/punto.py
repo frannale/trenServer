@@ -39,7 +39,7 @@ def config(api,docs):
             if not UserModel.is_admin(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
 
-            current_punto = PuntoModel.find_by_id_punto(id_punto,True)
+            current_punto = PuntoModel.find_by_id_punto_activo(id_punto,True)
             if current_punto:
                 current_punto.close_connection()
                 

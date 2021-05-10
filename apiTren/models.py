@@ -250,6 +250,14 @@ class PuntoModel(db.Model):
         if not result and close_connection:
             db.session.remove()
             db.engine.dispose()
+        return result
+
+    @classmethod
+    def find_by_id_punto_activo(cls, id_punto,close_connection):
+        result = cls.query.filter_by(id_punto = id_punto,estado = 'activo' ).first()
+        if not result:
+            db.session.remove()
+            db.engine.dispose()
         return result 
 
     @classmethod
@@ -292,7 +300,7 @@ class LecturaModel(db.Model):
             'id_cabina' : self.id_cabina,
             'id_tag' :  item[1] if item else 'null' ,
             'via' :  item[2] if item else 'null' ,
-            'baliza' :  item[3] if item else 'null' ,
+            'asociado_a' :  item[3] if item else 'null' ,
             'codigo_cabina' : item[4] if item else 'null' ,
             'epc' : self.epc,
             'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
@@ -317,7 +325,6 @@ class LecturaModel(db.Model):
                     .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
                     .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
                     .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
-                    .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
                     .filter(PuntoModel.estado == 'activo')\
                     .count()
 
@@ -327,7 +334,6 @@ class LecturaModel(db.Model):
                             .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
                             .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
                             .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
-                            .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
                             .filter(PuntoModel.estado == 'activo')\
                             .paginate(page,per_page,False).pages
 
@@ -337,7 +343,7 @@ class LecturaModel(db.Model):
                     .filter((LecturaModel.id_punto == id_punto) | (id_punto == 0))\
                     .join(PuntoModel, PuntoModel.id_punto == LecturaModel.id_punto, isouter=True)\
                     .join(CabinaModel, CabinaModel.id_config == LecturaModel.id_cabina, isouter=True)\
-                    .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.baliza,CabinaModel.codigo_cabina)\
+                    .add_columns(PuntoModel.id_tag,PuntoModel.via,PuntoModel.asociado_a,CabinaModel.codigo_cabina)\
                     .filter(PuntoModel.estado == 'activo')\
                     .order_by( desc(sort) if ord == 'd' else sort )\
                     .paginate(page,per_page,error_out=False)\
@@ -364,7 +370,7 @@ class LecturaModel(db.Model):
 
     @classmethod
     def find_by_id_punto(cls, id_punto):
-        result = cls.query.filter_by(id_punto = id_punto).first()
+        result = cls.query.filter_by(id_punto = id_punto ).first()
         if not result:
             db.session.remove()
             db.engine.dispose()
