@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
 from flask import Flask
 import datetime
+from datetime import timedelta  
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/TREN'
@@ -340,7 +341,7 @@ class LecturaModel(db.Model):
         id_cabina = get_args.get('id_cabina', 0)
         id_punto = get_args.get('id_punto', 0)
         desde_date =   datetime.datetime.strptime(get_args.get('desde'), '%d/%m/%Y')
-        hasta_date =   datetime.datetime.strptime(get_args.get('hasta'), '%d/%m/%Y')
+        hasta_date =   datetime.datetime.strptime(get_args.get('hasta'), '%d/%m/%Y') + timedelta(days=1)  
 
         total = cls.query\
                     .filter(LecturaModel.fecha_lectura.between(desde_date, hasta_date))\
