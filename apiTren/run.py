@@ -35,6 +35,10 @@ lectura.config(api,docs)
 def home():
   return render_template('index.html')
 
+@app.route('/doc', methods=['GET'])
+def doc():
+  return render_template('doc.html')
+
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler
 def handle_request_parsing_error(err, req, schema, *, error_status_code, error_headers):
