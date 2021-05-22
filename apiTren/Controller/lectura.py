@@ -53,7 +53,8 @@ def config(api,docs):
                 id_punto = id_punto,
                 id_cabina = kwargs['id_cabina'],
                 epc = kwargs['epc'],
-                fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
+                fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S'),
+                fecha_carga = datetime.now()
             )
             new_lectura.save_to_db()
 

@@ -35,9 +35,6 @@ lectura.config(api,docs)
 def home():
   return render_template('index.html')
 
-@app.route('/doc', methods=['GET'])
-def doc():
-  return render_template('doc.html')
 
 # This error handler is necessary for usage with Flask-RESTful
 @parser.error_handler
@@ -46,4 +43,4 @@ def handle_request_parsing_error(err, req, schema, *, error_status_code, error_h
 
 # LEVANTA APP
 if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=5000, url_scheme='https')
+    serve(app, host='192.168.0.238', port=5000, url_scheme='https')

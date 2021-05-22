@@ -304,6 +304,7 @@ class LecturaModel(db.Model):
     id_cabina = db.Column(db.Integer)
     epc = db.Column(db.String(220), nullable = False)
     fecha_lectura = db.Column(db.DateTime, nullable = False)
+    fecha_carga = db.Column(db.DateTime, nullable = False)
 
     def save_to_db(self):
         db.session.add(self)
@@ -328,6 +329,7 @@ class LecturaModel(db.Model):
             'codigo_cabina' : item[4] if item else 'null' ,
             'epc' : self.epc,
             'fecha_lectura' : self.fecha_lectura.strftime("%d/%m/%Y, %H:%M:%S"),
+            'fecha_carga' : self.fecha_carga.strftime("%d/%m/%Y, %H:%M:%S"),
         }
 
     @classmethod
