@@ -22,7 +22,9 @@ CONGIFURACION INICIAL
 
 6 - Con: mysql -u root -p TREN < admin.sql , importar en mysql el archivo admin.sql en la base TREN, esto carga un usuario llamado admin, contraseña KxZVM@&0$SOx_ con el rol admin  
 
-7(Opcional) - para crear nuevos usuarios esta el endpoint /user  
+7 - Buildear el front y poner los archivos aca, el index.html dentro de apiTren/templates, el resto en el directorio apiTren/
+
+8(Opcional) - para crear nuevos usuarios esta el endpoint /user  
 
 ![Captura de pantalla de 2021-05-22 20-26-34](https://user-images.githubusercontent.com/28931796/119243336-159d6300-bb3c-11eb-9173-16a3c3530b9c.png)
 
