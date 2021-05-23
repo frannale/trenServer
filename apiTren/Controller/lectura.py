@@ -54,7 +54,7 @@ def config(api,docs):
                 id_cabina = kwargs['id_cabina'],
                 epc = kwargs['epc'],
                 fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S'),
-                fecha_carga = datetime.now()
+                fecha_carga = datetime.datetime.now()
             )
             new_lectura.save_to_db()
 
