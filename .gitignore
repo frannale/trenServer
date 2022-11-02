@@ -1,2 +1,5 @@
 vm/
 */__pycache__/*
+apiTren/__pycache__
+apiTren/Controller/__pycache__
+apiTren/Documentation/__pycache__
