@@ -8,13 +8,33 @@ from webargs.flaskparser import use_args, use_kwargs, parser, abort
 from flask_cors import CORS
 import datetime
 from waitress import serve
+from dotenv import load_dotenv
+import os
+
+dotenv_path = os.path.join(os.getcwd(), ".env")
+fallback_path = os.path.join(os.getcwd(), ".env.example")
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+elif os.path.exists(fallback_path):
+    load_dotenv(fallback_path)
+
 
 # CONFIGURA APP
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "P*ahKoojhgnR"
-app.config["JWT_SECRET_KEY"] = "P*ahKoojhgnR"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(seconds=7200)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/TREN"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(
+    seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES"))
+)
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = "mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}".format(
+    DB_USER=os.getenv("DB_USER"),
+    DB_PASSWORD=os.getenv("DB_PASSWORD"),
+    DB_HOST=os.getenv("DB_HOST"),
+    DB_PORT=os.getenv("DB_PORT"),
+    DB_NAME=os.getenv("DB_NAME"),
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 

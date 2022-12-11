@@ -4,9 +4,26 @@ from sqlalchemy import desc
 from flask import Flask
 import datetime
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.getcwd(), ".env")
+fallback_path = os.path.join(os.getcwd(), ".env.example")
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+elif os.path.exists(fallback_path):
+    load_dotenv(fallback_path)
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://tyrell:root@localhost/TREN"
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = "mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}".format(
+    DB_USER=os.getenv("DB_USER"),
+    DB_PASSWORD=os.getenv("DB_PASSWORD"),
+    DB_HOST=os.getenv("DB_HOST"),
+    DB_PORT=os.getenv("DB_PORT"),
+    DB_NAME=os.getenv("DB_NAME"),
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -469,3 +486,25 @@ class LecturaModel(db.Model):
 
 
 db.create_all()
+
+try:
+    alreadyExists = UserModel.find_by_username("admin", db)
+    if alreadyExists:
+        raise Exception("Usuario admin ya creado. Salteando...")
+    defaultAdminUser = UserModel(
+        role="admin",
+        username="admin",
+        password=UserModel.generate_hash(os.getenv("DEFAULT_ADMIN_PASSWORD")),
+    )
+    UserModel.save_to_db(defaultAdminUser)
+    print("Exito al crear usuario admin por defecto")
+except Exception as exception:
+    print(str(exception))
+    if "ya creado" not in str(exception):
+        print("Error inesperado al crear el usuario admin por defecto")
+    else:
+        print(
+            "Exito! Servidor corriendo en el puerto: {SERVER_PORT}".format(
+                SERVER_PORT=5000
+            )
+        )
