@@ -498,6 +498,9 @@ try:
     )
     UserModel.save_to_db(defaultAdminUser)
     print("Exito al crear usuario admin por defecto")
+    print(
+        "Exito! Servidor corriendo en el puerto: {SERVER_PORT}".format(SERVER_PORT=5000)
+    )
 except Exception as exception:
     print(str(exception))
     if "ya creado" not in str(exception):
