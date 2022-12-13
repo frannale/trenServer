@@ -189,8 +189,6 @@ def config(api, docs):
             if not current_cabina:
                 return {"exito": False, "message": "No se encontro la cabina indicada"}
 
-            current_user = UserModel.find_by_username(str(id_config), False)
-            current_user.delete()
             current_cabina.delete()
 
             return {"exito": True, "message": "Cabina eliminada exitosamente"}
