@@ -209,7 +209,7 @@ def config(api, docs):
 
             # SOLO ADMIN
             if not UserModel.is_admin(get_jwt_identity()):
-                return {"exito": False, "message": "Acceso denegado"}
+               return {"exito": False, "message": "Acceso denegado"}
             try:
                 databaseFields = {
                     "id_config": "ID_Config",
@@ -229,6 +229,7 @@ def config(api, docs):
                     raise Exception(
                         "El esquema del archivo subido no coincide con el de la plantilla"
                     )
+                usersList = []
                 databaseObjects = []
 
                 for index, row in spreadsheet.iterrows():
@@ -237,6 +238,15 @@ def config(api, docs):
                         parsedDate = rowDict[databaseFields["fecha_instalacion"]]
                     else:
                         parsedDate = date.today()
+                    usersList.append(
+                        {
+                            "username": str(rowDict[databaseFields["id_config"]]),
+                            "password": UserModel.generate_hash(
+                                "KxZVM@&0$SOx_" + str(rowDict[databaseFields["id_config"]])
+                            ),
+                            "role": "tren",
+                        }
+                    )
                     databaseObjects.append(
                         {
                             "id_config": rowDict[databaseFields["id_config"]],
@@ -246,7 +256,7 @@ def config(api, docs):
                             "index": index + 2,
                         }
                     )
-                CabinaModel.bulk_insert(databaseObjects)
+                CabinaModel.bulk_insert(databaseObjects, usersList)
                 return {"exito": True, "parsedData": databaseObjects}
             except Exception as error:
                 try:

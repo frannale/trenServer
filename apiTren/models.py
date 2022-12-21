@@ -124,11 +124,13 @@ class CabinaModel(db.Model):
             "fecha_instalacion": self.fecha_instalacion.strftime("%d/%m/%Y"),
         }
 
-    def bulk_insert(cabinasList):
+    def bulk_insert(cabinasList, usersList):
         try:
+            db.session.bulk_insert_mappings(UserModel, usersList)
             db.session.bulk_insert_mappings(CabinaModel, cabinasList)
             db.session.commit()
         except Exception as error:
+            print(error)
             db.session.rollback()
             raise error
 
