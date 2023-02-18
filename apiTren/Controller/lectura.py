@@ -59,23 +59,15 @@ def config(api,docs):
                 )
                 new_lectura.save_to_db()
                 new_lectura.close_connection()
-            except:
-                return {
-                    'exito' : False,
-                    'message': 'Fallo al crear la lectura con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura']
-                }
-
-
-            
-
-            try:
-
                 return {
                     'exito' : True,
                     'message': 'Lectura creada exitosamente'
                 }
             except:
-                return {'exito' : False,'message': 'Ocurrio un error al crear la lectura'}
+                return {
+                    'exito' : False,
+                    'message': 'Fallo al crear la lectura con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura']
+                }
 
     api.add_resource(PostLectura, '/lecturas/new')
     docs.register(PostLectura)
