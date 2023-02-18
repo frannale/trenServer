@@ -48,15 +48,25 @@ def config(api,docs):
             # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
             id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)
 
-            # CREA LECTURA
-            new_lectura = LecturaModel(
-                id_punto = id_punto,
-                id_cabina = kwargs['id_cabina'],
-                epc = kwargs['epc'],
-                fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S'),
-                fecha_carga = datetime.datetime.now()
-            )
-            new_lectura.save_to_db()
+            try: 
+                # CREA LECTURA
+                new_lectura = LecturaModel(
+                    id_punto = id_punto,
+                    id_cabina = kwargs['id_cabina'],
+                    epc = kwargs['epc'],
+                    fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S'),
+                    fecha_carga = datetime.datetime.now()
+                )
+                new_lectura.save_to_db()
+                new_lectura.close_connection()
+            except:
+                return {
+                    'exito' : False,
+                    'message': 'Fallo al crear la lectura con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura']
+                }
+
+
+            
 
             try:
 
