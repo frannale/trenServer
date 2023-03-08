@@ -42,11 +42,13 @@ def config(api,docs):
         @use_kwargs(PostLecturaSchema, location=('json'))
         def post(self, **kwargs):
 
-            # SOLO TREN
-            if not UserModel.is_tren(get_jwt_identity()):
-                return {'exito' : False,'message': 'Acceso denegado'}
+
 
             try: 
+                logging.error('Lectura recibida ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+                # SOLO TREN
+                if not UserModel.is_tren(get_jwt_identity()):
+                    return {'exito' : False,'message': 'Acceso denegado'}
 
                 date_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
                 
@@ -56,6 +58,7 @@ def config(api,docs):
                 # CHEKEA POR LECTURA EXISTENTE
                 exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura, id_punto)
                 if exist_lectura:
+                    logging.error('Lectura ya registrada ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
                     return {'exito' : True,'message': 'Lectura ya registrada'}
 
                 # CREA LECTURA
