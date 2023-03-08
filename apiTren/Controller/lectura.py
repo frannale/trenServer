@@ -42,7 +42,7 @@ def config(api,docs):
         @use_kwargs(PostLecturaSchema, location=('json'))
         def post(self, **kwargs):
 
-            logging.error('Lectura recibida ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+            logging.error('Lectura recibida ' + str(kwargs['id_cabina']) + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
             # SOLO TREN
             if not UserModel.is_tren(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
@@ -88,7 +88,7 @@ def config(api,docs):
                 # CHEKEA POR LECTURA EXISTENTE
                 exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura, id_punto)
                 if exist_lectura:
-                    logging.error('Lectura ya registrada ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+                    logging.error('Lectura ya registrada ' + str(kwargs['id_cabina']) + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
                     return {'exito' : True,'message': 'Lectura ya registrada'}
 
                 # CREA LECTURA
@@ -106,7 +106,7 @@ def config(api,docs):
                     'message': 'Lectura creada exitosamente'
                 }
             except:
-                logging.error('Fallo al crear la lectura de cabina ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+                logging.error('Fallo al crear la lectura de cabina ' + str(kwargs['id_cabina']) + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
                 return {
                     'exito' : False,
                     'message': 'Fallo al crear la lectura con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura']
