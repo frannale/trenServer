@@ -1,3 +1,4 @@
+import logging
 from flask_apispec import marshal_with, doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource, Api, fields, marshal_with
@@ -44,18 +45,19 @@ def config(api,docs):
             # SOLO TREN
             if not UserModel.is_tren(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
-            
-            date_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
-            
-            # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
-            id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)
-            
-            # CHEKEA POR LECTURA EXISTENTE
-            exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura,id_punto)
-            if exist_lectura:
-                return {'exito' : True,'message': 'Lectura ya registrada'}
 
             try: 
+
+                date_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
+                
+                # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
+                id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)
+                
+                # CHEKEA POR LECTURA EXISTENTE
+                exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura, id_punto)
+                if exist_lectura:
+                    return {'exito' : True,'message': 'Lectura ya registrada'}
+
                 # CREA LECTURA
                 new_lectura = LecturaModel(
                     id_punto = id_punto,
@@ -71,6 +73,7 @@ def config(api,docs):
                     'message': 'Lectura creada exitosamente'
                 }
             except:
+                logging.error('Fallo al crear la lectura de cabina ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
                 return {
                     'exito' : False,
                     'message': 'Fallo al crear la lectura con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura']

@@ -1,3 +1,4 @@
+import logging
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template
 from flask_restful import Api
@@ -17,6 +18,13 @@ if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 elif os.path.exists(fallback_path):
     load_dotenv(fallback_path)
+
+
+logging.basicConfig(level=logging.DEBUG,
+                    filename='app.log',
+                    filemode='a',
+                    format='%(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 
 # CONFIGURA APP
@@ -70,4 +78,4 @@ def handle_request_parsing_error(err, req, schema, *, error_status_code, error_h
 
 # LEVANTA APP
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=5000, url_scheme="https")
+    serve(app, host="0.0.0.0", port=5000, url_scheme="https",debug=True)
