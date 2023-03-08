@@ -42,9 +42,39 @@ def config(api,docs):
         @use_kwargs(PostLecturaSchema, location=('json'))
         def post(self, **kwargs):
 
+            logging.error('Lectura recibida ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+            # SOLO TREN
+            if not UserModel.is_tren(get_jwt_identity()):
+                return {'exito' : False,'message': 'Acceso denegado'}
 
+            date_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
+            
+            # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
+            id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)
+            
+            # CHEKEA POR LECTURA EXISTENTE
+            exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura, id_punto)
+            if exist_lectura:
+                logging.error('Lectura ya registrada ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
+                return {'exito' : True,'message': 'Lectura ya registrada'}
+
+            # CREA LECTURA
+            new_lectura = LecturaModel(
+                id_punto = id_punto,
+                id_cabina = kwargs['id_cabina'],
+                epc = kwargs['epc'],
+                fecha_lectura = date_lectura,
+                fecha_carga = datetime.datetime.now()
+            )
+            new_lectura.save_to_db()
+            new_lectura.close_connection()
+            return {
+                'exito' : True,
+                'message': 'Lectura creada exitosamente'
+            }
 
             try: 
+                
                 logging.error('Lectura recibida ' + kwargs['id_cabina'] + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])
                 # SOLO TREN
                 if not UserModel.is_tren(get_jwt_identity()):
