@@ -78,4 +78,4 @@ def handle_request_parsing_error(err, req, schema, *, error_status_code, error_h
 
 # LEVANTA APP
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=5000, url_scheme="https",debug=True)
+    serve(app, host="0.0.0.0", port=5000, url_scheme="https")
