@@ -44,9 +44,16 @@ def config(api,docs):
             # SOLO TREN
             if not UserModel.is_tren(get_jwt_identity()):
                 return {'exito' : False,'message': 'Acceso denegado'}
-
+            
+            date_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S')
+            
             # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
             id_punto = int("0x"+str(kwargs['epc'][0:4]), 0)
+            
+            # CHEKEA POR LECTURA EXISTENTE
+            exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura,id_punto)
+            if exist_lectura:
+                return {'exito' : True,'message': 'Lectura ya registrada'}
 
             try: 
                 # CREA LECTURA
@@ -54,7 +61,7 @@ def config(api,docs):
                     id_punto = id_punto,
                     id_cabina = kwargs['id_cabina'],
                     epc = kwargs['epc'],
-                    fecha_lectura = datetime.datetime.strptime(kwargs['fecha_lectura'], '%d/%m/%Y, %H:%M:%S'),
+                    fecha_lectura = date_lectura,
                     fecha_carga = datetime.datetime.now()
                 )
                 new_lectura.save_to_db()

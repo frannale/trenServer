@@ -458,6 +458,20 @@ class LecturaModel(db.Model):
         result["total_page"] = total_pages
 
         return result
+    
+    @classmethod
+    def find_repeated(cls, id_cabina, fecha, id_punto):
+        result = (
+            cls.query.filter_by(id_cabina =id_cabina)
+            .filter((LecturaModel.id_punto == id_punto))
+            .filter((LecturaModel.fecha_lectura == fecha))
+            .first()
+        )
+        if result:
+            db.session.remove()
+            db.engine.dispose()
+            return True
+        return False
 
     @classmethod
     def find_by_id_lectura(cls, id_lectura):
