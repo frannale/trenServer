@@ -20,7 +20,7 @@ elif os.path.exists(fallback_path):
     load_dotenv(fallback_path)
 
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.ERROR,
                     filename='app.log',
                     filemode='a',
                     format='%(asctime)s - %(message)s',
