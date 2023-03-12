@@ -338,7 +338,7 @@ class PuntoModel(db.Model):
 # LECTURA CLASS
 class LecturaModel(db.Model):
     __tablename__ = "lecturas"
-
+    # alter table lecturas add constraint unique_lectura unique(id_cabina,fecha_lectura)
     id_lectura = db.Column(db.Integer, primary_key=True)
     id_punto = db.Column(db.Integer)
     id_cabina = db.Column(db.Integer)
@@ -527,3 +527,9 @@ except Exception as exception:
                 SERVER_PORT=5000
             )
         )
+
+
+
+
+
+

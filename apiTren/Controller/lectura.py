@@ -53,7 +53,7 @@ def config(api,docs):
                 }
             
             if len(kwargs['epc']) > 24:
-                logging.error('EPC malformado: ' + str(kwargs['id_cabina'])+ ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])        
+                logging.error('EPC malformado: ' + str(kwargs['id_cabina']) + ' con epc:' + kwargs['epc'] + ' y fecha de lectura ' + kwargs['fecha_lectura'])        
             
             epc = str(kwargs['epc'][0:24])
 
@@ -66,10 +66,6 @@ def config(api,docs):
                 # CONVIERTE EPC PRIMEROS 4 DE HEXADECIMAL A INT
                 id_punto = int("0x"+epc[0:4], 0)
                 
-                # CHEKEA POR LECTURA EXISTENTE
-                exist_lectura = LecturaModel.find_repeated(kwargs['id_cabina'],date_lectura, id_punto)
-                if exist_lectura:
-                    return {'exito' : True, 'message': 'Lectura ya registrada'}
 
                 # CREA LECTURA
                 new_lectura = LecturaModel(
@@ -86,6 +82,15 @@ def config(api,docs):
                     'message': 'Lectura creada exitosamente'
                 }
             except Exception as e:
+                if new_lectura:
+                    new_lectura.close_connection()
+                
+                if "unique_lectura" in str(e):
+                    return {
+                        'exito' : True,
+                        'message': 'Lectura ya registrada'
+                    }
+
                 logging.error(e)
                 return {
                     'exito' : False,
